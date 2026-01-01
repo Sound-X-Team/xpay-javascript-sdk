@@ -1,0 +1,20 @@
+{
+  "name": "xpay-sdk-test",
+  "version": "1.0.0",
+  "description": "Test environment for X-Pay SDK",
+  "main": "test-app.js",
+  "scripts": {
+    "test:js": "node test-app.js",
+    "test:ts": "npx ts-node test-app.ts",
+    "test:sdk": "node ../test-sdk.js",
+    "test:examples": "node ../examples/basic-payment.js"
+  },
+  "dependencies": {
+    "@xpay/javascript-sdk": "file:../",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
