@@ -1,9 +1,27 @@
-import { HTTPClient } from './http';
-import { PaymentsAPI } from './payments';
-import { WebhooksAPI } from './webhooks';
-import { CustomersAPI } from './customers';
-import { XPayConfig } from './types';
+import { HTTPClient } from "./http";
+import { PaymentsAPI } from "./payments";
+import { WebhooksAPI } from "./webhooks";
+import { CustomersAPI } from "./customers";
+import { XPayConfig, XPayError, PaymentMethods } from "./types";
 
+/**
+ * Main XPay SDK client.
+ *
+ * @example
+ * ```typescript
+ * const xpay = new XPay({
+ *   apiKey: 'sk_sandbox_...',
+ *   merchantId: 'your_merchant_id',
+ *   environment: 'sandbox'
+ * });
+ *
+ * const payment = await xpay.payments.create({
+ *   amount: '10.00',
+ *   currency: 'USD',
+ *   payment_method: 'stripe'
+ * });
+ * ```
+ */
 export class XPay {
   private client: HTTPClient;
   private merchantId: string;
@@ -18,60 +36,53 @@ export class XPay {
 
   constructor(config: XPayConfig) {
     if (!config.apiKey) {
-      throw new Error('API key is required');
+      throw new XPayError("API key is required", "MISSING_API_KEY");
     }
 
-    // Extract merchant ID from config or derive from API key
-    this.merchantId = config.merchantId || this.extractMerchantIdFromApiKey(config.apiKey);
+    if (!config.merchantId) {
+      throw new XPayError(
+        "Merchant ID is required. Get your merchant ID from the X-Pay dashboard.",
+        "MISSING_MERCHANT_ID"
+      );
+    }
 
+    this.merchantId = config.merchantId;
     this.client = new HTTPClient(config);
     this.payments = new PaymentsAPI(this.client, this.merchantId);
     this.webhooks = new WebhooksAPI(this.client, this.merchantId);
     this.customers = new CustomersAPI(this.client, this.merchantId);
   }
 
-  private extractMerchantIdFromApiKey(apiKey: string): string {
-    // For now, use a default merchant ID or extract from API key structure
-    // In production, this would be handled by the backend or passed explicitly
-    return 'default';
-  }
-
   /**
    * Test API connectivity and authentication
    */
   async ping(): Promise<{ success: boolean; timestamp: string }> {
-    const response = await this.client.get<{ timestamp: string }>('/v1/healthz');
+    const response = await this.client.get<{ timestamp: string }>(
+      "/v1/healthz"
+    );
     return {
       success: response.success,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   /**
    * Get payment methods available for this merchant
    */
-  async getPaymentMethods(): Promise<{
-    payment_methods: Array<{
-      type: string;
-      name: string;
-      description: string;
-      enabled: boolean;
-      currencies: string[];
-    }>;
-    environment: string;
-    merchant_id: string;
-  }> {
-    const response = await this.client.get<any>(`/v1/api/merchants/${this.merchantId}/payment-methods`);
+  async getPaymentMethods(): Promise<PaymentMethods> {
+    const response = await this.client.get<PaymentMethods>(
+      `/v1/api/merchants/${this.merchantId}/payment-methods`
+    );
     return response.data;
   }
 }
 
 // Export everything for convenient importing
-export * from './types';
-export * from './payments';
-export * from './webhooks';
-export * from './customers';
-export { HTTPClient } from './http';
+export * from "./types";
+export * from "./payments";
+export * from "./webhooks";
+export * from "./customers";
+export { HTTPClient } from "./http";
 
 // Default export
 export default XPay;
