@@ -1,6 +1,6 @@
 {
   "name": "@bits-innovate/xpay-javascript",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Official X-Pay JavaScript SDK for Node.js and browsers",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -42,7 +42,6 @@
   },
   "homepage": "https://docs.x-pay.com/sdks/javascript",
   "dependencies": {
-    "@bits-innovate/xpay-javascript": "^1.0.2",
     "cross-fetch": "^4.0.0"
   },
   "devDependencies": {
